@@ -21,7 +21,7 @@ class Project(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="projects")
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, default="")
-    color = models.CharField(max_length=20, default="indigo", choices=COLOR_CHOICES)
+    color = models.CharField(max_length=20, default="blue", blank=True)
     icon = models.CharField(max_length=50, default="folder")
     is_archived = models.BooleanField(default=False)
     sort_order = models.IntegerField(default=0)
@@ -40,4 +40,11 @@ class Project(models.Model):
 
     @property
     def task_count(self):
+        if hasattr(self, "_task_count"):
+            return self._task_count
         return self.tasks.filter(status__in=["todo", "in_progress"]).count()
+
+    @task_count.setter
+    def task_count(self, value):
+        self._task_count = value
+

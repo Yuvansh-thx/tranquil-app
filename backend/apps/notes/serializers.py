@@ -108,7 +108,8 @@ class NoteSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         tags = validated_data.pop("tags", [])
-        note = Note.objects.create(user=self.context["request"].user, **validated_data)
+        user = validated_data.pop("user", None) or self.context["request"].user
+        note = Note.objects.create(user=user, **validated_data)
         if tags:
             note.tags.set(tags)
         self._sync_links(note)

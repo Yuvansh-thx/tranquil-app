@@ -73,6 +73,8 @@ def register_view(request):
     response = Response(
         {
             "user": UserSerializer(user).data,
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
             "message": "Account created successfully.",
         },
         status=status.HTTP_201_CREATED,
@@ -105,6 +107,8 @@ def login_view(request):
     response = Response(
         {
             "user": user_data["user"],
+            "access": str(tokens.access_token),
+            "refresh": str(tokens),
             "message": "Logged in successfully.",
         },
         status=status.HTTP_200_OK,
@@ -116,8 +120,8 @@ def login_view(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def refresh_view(request):
-    """Rotate JWT tokens using the refresh cookie."""
-    refresh_token = request.COOKIES.get(settings.JWT_AUTH_REFRESH_COOKIE)
+    """Rotate JWT tokens using the refresh cookie or request body."""
+    refresh_token = request.COOKIES.get(settings.JWT_AUTH_REFRESH_COOKIE) or request.data.get("refresh")
 
     if not refresh_token:
         return Response(
@@ -140,7 +144,14 @@ def refresh_view(request):
         _clear_auth_cookies(response)
         return response
 
-    response = Response({"message": "Token refreshed."}, status=status.HTTP_200_OK)
+    response = Response(
+        {
+            "access": str(new_access),
+            "refresh": str(new_refresh),
+            "message": "Token refreshed.",
+        },
+        status=status.HTTP_200_OK,
+    )
     _set_auth_cookies(response, new_access, new_refresh)
     return response
 

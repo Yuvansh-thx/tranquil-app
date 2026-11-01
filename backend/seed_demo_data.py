@@ -148,25 +148,6 @@ for t_data in tasks_data:
         )
 
 # 4. Notes with Keep colors and Obsidian [[wikilinks]]
-notes_data = [
-    {
-        'title': 'Architecture Principles',
-        'content': '''# Architecture Principles
-Core mental models for engineering resilient systems:
-
-1. **Clean Separation of Concerns**: Keep client presentation decoupled from business domains.
-2. **Deterministic Data Contracts**: Schemas and typed DTOs eliminate runtime mismatch.
-3. **Calm Software Ergonomics**: Fast capture meets deep knowledge synthesis.
-
-Connected thoughts:
-- See [[Deep Work Routine]] for optimal cognitive scheduling.
-- Review [[System Design]] for database indexing patterns.
-''',
-        'color': 'fog',
-        'is_pinned': True,
-        'project': project_objs['Product Roadmap'],
-        'tags': [tag_objs['Engineering']],
-    },
     {
         'title': 'Deep Work Routine',
         'content': '''# Deep Work Routine
@@ -176,7 +157,6 @@ The daily flow formula:
 - **Afternoon**: Collaborative reviews and quick tasks.
 
 Cross-references:
-- Grounded in [[Architecture Principles]].
 - Tracked in [[Productivity Metrics]].
 ''',
         'color': 'mint',
@@ -190,7 +170,7 @@ Cross-references:
 Key architectural choices in Tranquil:
 - PostgreSQL with B-tree & GIN full-text indexes.
 - HttpOnly JWT access/refresh cookies with CSRF defense.
-- Force-directed Canvas simulation for [[Architecture Principles]].
+- Force-directed Canvas simulation for knowledge graph.
 - Bidirectional link graph synced on note save.
 ''',
         'color': 'sand',

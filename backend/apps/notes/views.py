@@ -1,4 +1,4 @@
-"""Notes views — CRUD, backlinks, links, knowledge graph data."""
+import re
 from django.db.models import Count
 from rest_framework import viewsets, permissions, status, filters
 from rest_framework.decorators import action
@@ -106,6 +106,100 @@ class NoteViewSet(viewsets.ModelViewSet):
         serializer = NoteSerializer(new_note, context={"request": request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=True, methods=["post"])
+    def link(self, request, pk=None):
+        """Link this note to another note by target_note_id or target_title."""
+        note = self.get_object()
+        target_id = request.data.get("target_note_id")
+        target_title = request.data.get("target_title", "").strip()
+
+        target_note = None
+        if target_id:
+            if str(note.id) == str(target_id):
+                return Response({"detail": "Cannot link a note to itself."}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                target_note = Note.objects.get(id=target_id, user=request.user)
+                target_title = target_note.title or "Untitled"
+            except Note.DoesNotExist:
+                return Response({"detail": "Target note not found."}, status=status.HTTP_404_NOT_FOUND)
+        elif target_title:
+            target_note = Note.objects.filter(title__iexact=target_title, user=request.user).first()
+        else:
+            return Response({"detail": "target_note_id or target_title is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        wikilink_str = f"[[{target_title}]]"
+        if wikilink_str not in note.content:
+            if note.content.strip():
+                note.content = f"{note.content.rstrip()}\n\n- {wikilink_str}"
+            else:
+                note.content = wikilink_str
+            note.save(update_fields=["content", "updated_at"])
+
+            NoteLink.objects.update_or_create(
+                source_note=note,
+                target_title=target_title,
+                defaults={"target_note": target_note},
+            )
+
+        serializer = NoteSerializer(note, context={"request": request})
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def unlink(self, request, pk=None):
+        """Unlink this note from another note."""
+        note = self.get_object()
+        target_id = request.data.get("target_note_id")
+        target_title = request.data.get("target_title", "").strip()
+
+        if target_id:
+            try:
+                target_note = Note.objects.get(id=target_id, user=request.user)
+                target_title = target_note.title or target_title
+            except Note.DoesNotExist:
+                pass
+
+        if target_title:
+            pattern = re.compile(rf'(\n?-?\s*\[\[{re.escape(target_title)}(?:\|[^\]]+)?\]\])')
+            note.content = pattern.sub('', note.content).strip()
+            note.save(update_fields=["content", "updated_at"])
+            NoteLink.objects.filter(source_note=note, target_title=target_title).delete()
+
+        serializer = NoteSerializer(note, context={"request": request})
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"])
+    def connect(self, request):
+        """Connect any two notes: source_id -> target_id."""
+        source_id = request.data.get("source_id")
+        target_id = request.data.get("target_id")
+        if not source_id or not target_id:
+            return Response({"detail": "source_id and target_id are required."}, status=status.HTTP_400_BAD_REQUEST)
+        if str(source_id) == str(target_id):
+            return Response({"detail": "Cannot link a note to itself."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            source = Note.objects.get(id=source_id, user=request.user)
+            target = Note.objects.get(id=target_id, user=request.user)
+        except Note.DoesNotExist:
+            return Response({"detail": "One or both notes not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        target_title = target.title or "Untitled"
+        wikilink_str = f"[[{target_title}]]"
+        if wikilink_str not in source.content:
+            if source.content.strip():
+                source.content = f"{source.content.rstrip()}\n\n- {wikilink_str}"
+            else:
+                source.content = wikilink_str
+            source.save(update_fields=["content", "updated_at"])
+
+            NoteLink.objects.update_or_create(
+                source_note=source,
+                target_title=target_title,
+                defaults={"target_note": target},
+            )
+
+        return Response({"status": "connected", "source_id": str(source.id), "target_id": str(target.id)})
+
     @action(detail=False, methods=["get"])
     def graph(self, request):
         """
@@ -123,7 +217,9 @@ class NoteViewSet(viewsets.ModelViewSet):
 
         links = NoteLink.objects.filter(
             source_note__user=request.user,
+            source_note__is_archived=False,
             target_note__isnull=False,
+            target_note__is_archived=False,
         ).values("source_note_id", "target_note_id")
 
         nodes = [

@@ -178,3 +178,123 @@ def focus_analytics(request):
         "avg_session_minutes": round(avg_session / 60, 1),
         "total_sessions_completed": total_completed,
     })
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def activity_analytics(request):
+    """
+    Returns daily activity for both tasks and focus hours.
+    Designed for:
+    1. GitHub-style daily block contribution heatmap (level 0 to 4)
+    2. Focus Hours vs. Tasks Completed comparative graph
+    """
+    user = request.user
+    days_count = int(request.query_params.get("days", 365))
+    today = timezone.now().date()
+    start_date = today - timedelta(days=days_count - 1)
+
+    # 1. Query task completions grouped by date
+    task_counts = {
+        row["date"]: row["count"]
+        for row in (
+            Task.objects.filter(user=user, completed_at__date__gte=start_date)
+            .annotate(date=TruncDate("completed_at"))
+            .values("date")
+            .annotate(count=Count("id"))
+        )
+        if row["date"]
+    }
+
+    # 2. Query focus duration in seconds grouped by date
+    focus_data = {
+        row["date"]: row["total_seconds"] or 0
+        for row in (
+            FocusSession.objects.filter(
+                user=user,
+                session_type="work",
+                status="completed",
+                started_at__date__gte=start_date,
+            )
+            .annotate(date=TruncDate("started_at"))
+            .values("date")
+            .annotate(total_seconds=Sum("actual_duration_seconds"))
+        )
+        if row["date"]
+    }
+
+    # 3. Build continuous date list from start_date to today
+    daily_records = []
+    total_focus_seconds = 0
+    total_tasks = 0
+    active_days_count = 0
+
+    curr = start_date
+    while curr <= today:
+        t_count = task_counts.get(curr, 0)
+        f_sec = focus_data.get(curr, 0)
+        total_focus_seconds += f_sec
+        total_tasks += t_count
+
+        f_hours = round(f_sec / 3600.0, 1)
+        f_mins = round(f_sec / 60.0)
+
+        # Activity level 0 - 4 (similar to GitHub green blocks)
+        score = t_count + (f_mins / 25.0)
+        if score == 0:
+            level = 0
+        elif score <= 1.5:
+            level = 1
+        elif score <= 3.5:
+            level = 2
+        elif score <= 6.0:
+            level = 3
+        else:
+            level = 4
+
+        if score > 0:
+            active_days_count += 1
+
+        daily_records.append({
+            "date": curr.strftime("%Y-%m-%d"),
+            "tasks_completed": t_count,
+            "focus_hours": f_hours,
+            "focus_minutes": f_mins,
+            "level": level,
+        })
+        curr += timedelta(days=1)
+
+    # 4. Calculate streaks
+    current_streak = 0
+    longest_streak = 0
+    temp_streak = 0
+
+    for rec in daily_records:
+        if rec["tasks_completed"] > 0 or rec["focus_minutes"] > 0:
+            temp_streak += 1
+            if temp_streak > longest_streak:
+                longest_streak = temp_streak
+        else:
+            temp_streak = 0
+
+    for rec in reversed(daily_records):
+        if rec["tasks_completed"] > 0 or rec["focus_minutes"] > 0:
+            current_streak += 1
+        else:
+            if rec["date"] == today.strftime("%Y-%m-%d"):
+                continue
+            break
+
+    total_focus_hours = round(total_focus_seconds / 3600.0, 1)
+
+    return Response({
+        "daily": daily_records,
+        "summary": {
+            "total_focus_hours": total_focus_hours,
+            "total_tasks_completed": total_tasks,
+            "current_streak": current_streak,
+            "longest_streak": longest_streak,
+            "total_active_days": active_days_count,
+            "days_count": days_count,
+        }
+    })

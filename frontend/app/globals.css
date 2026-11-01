@@ -1,0 +1,368 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --card: rgba(255, 255, 255, 0.78);
+    --card-foreground: #0f172a;
+    --popover: rgba(255, 255, 255, 0.95);
+    --popover-foreground: #0f172a;
+    --primary: #4880ec;
+    --primary-foreground: #ffffff;
+    --secondary: rgba(15, 23, 42, 0.06);
+    --secondary-foreground: #0f172a;
+    --muted: rgba(15, 23, 42, 0.05);
+    --muted-foreground: #475569;
+    --accent: rgba(72, 128, 236, 0.15);
+    --accent-foreground: #1d4ed8;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: rgba(15, 23, 42, 0.12);
+    --input: rgba(15, 23, 42, 0.15);
+    --ring: #4880ec;
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: #090d16;
+    --foreground: #f8fafc;
+    --card: rgba(17, 24, 39, 0.45);
+    --card-foreground: #f8fafc;
+    --popover: rgba(15, 23, 42, 0.85);
+    --popover-foreground: #f8fafc;
+    --primary: #4880ec;
+    --primary-foreground: #ffffff;
+    --secondary: rgba(255, 255, 255, 0.1);
+    --secondary-foreground: #f8fafc;
+    --muted: rgba(255, 255, 255, 0.08);
+    --muted-foreground: #94a3b8;
+    --accent: rgba(72, 128, 236, 0.2);
+    --accent-foreground: #93c5fd;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: rgba(255, 255, 255, 0.15);
+    --input: rgba(255, 255, 255, 0.15);
+    --ring: #4880ec;
+  }
+}
+
+/* Base Body: Dark Mode Default */
+body {
+  background-image: linear-gradient(to bottom, rgba(10, 15, 29, 0.80), rgba(10, 15, 29, 0.88)), url('/images/auth-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Light Mode Body: Frosted daylight mountain canvas with dark text */
+html:not(.dark) body,
+html.light body {
+  background-image: linear-gradient(to bottom, rgba(248, 250, 252, 0.88), rgba(241, 245, 249, 0.95)), url('/images/auth-bg.jpg');
+  color: #0f172a;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Dark mode glassmorphism matching the login page UI */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.glass-input {
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+}
+
+.glass-input:focus {
+  border-bottom-color: #ffffff;
+  outline: none;
+}
+
+.btn-primary-blue {
+  background-color: #4880ec;
+  color: #ffffff !important;
+  box-shadow: 0 8px 25px -4px rgba(72, 128, 236, 0.45);
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-primary-blue:hover {
+  background-color: #3b71db;
+  box-shadow: 0 10px 30px -4px rgba(72, 128, 236, 0.6);
+}
+
+/* =========================================================================
+   LIGHT MODE: CONVERT TEXT COLORS TO DARKER SHADES
+   ========================================================================= */
+html:not(.dark) {
+  color-scheme: light;
+}
+
+/* Headings in Light Mode */
+html:not(.dark) h1,
+html:not(.dark) h2,
+html:not(.dark) h3,
+html:not(.dark) h4,
+html:not(.dark) h5,
+html:not(.dark) h6 {
+  color: #0f172a;
+}
+
+/* Primary text: white / slate-100 converts to rich dark slate (#0f172a) */
+html:not(.dark) :is(
+  .text-white,
+  .text-slate-100
+):not(
+  .btn-primary-blue,
+  .btn-primary-blue *,
+  .bg-\[\#4880ec\],
+  .bg-\[\#4880ec\] *,
+  .bg-blue-600,
+  .bg-blue-600 *,
+  .bg-blue-500,
+  .bg-blue-500 *,
+  .bg-indigo-600,
+  .bg-indigo-600 *,
+  .bg-rose-500,
+  .bg-rose-500 *,
+  .bg-emerald-500,
+  .bg-emerald-500 *,
+  .bg-amber-500,
+  .bg-amber-500 *,
+  .bg-red-500,
+  .bg-red-500 *,
+  .bg-gradient-to-br,
+  .bg-gradient-to-br *
+) {
+  color: #0f172a !important;
+}
+
+/* Secondary text: 90% and 80% opacity and slate-200 convert to (#1e293b) */
+html:not(.dark) :is(
+  .text-white\/90,
+  .text-white\/80,
+  .text-slate-200
+):not(
+  .btn-primary-blue *,
+  .bg-\[\#4880ec\] *,
+  .bg-blue-600 *,
+  .bg-rose-500 *,
+  .bg-emerald-500 *
+) {
+  color: #1e293b !important;
+}
+
+/* Medium-dark text: 70% and 60% opacity and slate-300 convert to (#334155) */
+html:not(.dark) :is(
+  .text-white\/70,
+  .text-white\/60,
+  .text-slate-300,
+  .text-slate-400
+):not(
+  .btn-primary-blue *,
+  .bg-\[\#4880ec\] *
+) {
+  color: #334155 !important;
+}
+
+/* Muted text: 50% and 40% opacity and slate-500 convert to (#64748b) */
+html:not(.dark) :is(
+  .text-white\/50,
+  .text-white\/40,
+  .text-slate-500
+):not(
+  .btn-primary-blue *,
+  .bg-\[\#4880ec\] *
+) {
+  color: #64748b !important;
+}
+
+/* Subtle text: 30% and 20% opacity convert to (#94a3b8) */
+html:not(.dark) :is(
+  .text-white\/30,
+  .text-white\/20
+):not(
+  .btn-primary-blue *,
+  .bg-\[\#4880ec\] *
+) {
+  color: #94a3b8 !important;
+}
+
+/* Vibrant accents adapt for light backgrounds */
+html:not(.dark) :is(.text-sky-200, .text-sky-300):not(.btn-primary-blue *, .bg-\[\#4880ec\] *) {
+  color: #0284c7 !important;
+}
+html:not(.dark) :is(.text-blue-200, .text-blue-300):not(.btn-primary-blue *, .bg-\[\#4880ec\] *) {
+  color: #1d4ed8 !important;
+}
+html:not(.dark) :is(.text-emerald-200, .text-emerald-300) { color: #047857 !important; }
+html:not(.dark) :is(.text-amber-200, .text-amber-300) { color: #b45309 !important; }
+html:not(.dark) :is(.text-rose-200, .text-rose-300) { color: #be123c !important; }
+html:not(.dark) :is(.text-purple-200, .text-purple-300) { color: #6d28d9 !important; }
+
+/* Light mode frosted glass styling */
+html:not(.dark) .glass-panel {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 12px 35px -5px rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+
+html:not(.dark) .glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  color: #0f172a;
+}
+
+html:not(.dark) .glass-card:hover {
+  background: rgba(255, 255, 255, 0.90);
+  border-color: rgba(15, 23, 42, 0.18);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+html:not(.dark) .glass-pill {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  color: #0f172a;
+}
+
+html:not(.dark) .glass-input {
+  background: transparent;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.35);
+  color: #0f172a !important;
+}
+
+html:not(.dark) .glass-input::placeholder {
+  color: #64748b !important;
+}
+
+html:not(.dark) .glass-input:focus {
+  border-bottom-color: #4880ec;
+}
+
+/* Light mode Header & Sidebar */
+html:not(.dark) header {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.10) !important;
+}
+
+html:not(.dark) aside {
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  border-right-color: rgba(15, 23, 42, 0.10) !important;
+}
+
+/* Soft borders & cards in Light Mode */
+html:not(.dark) :is(
+  .border-white\/10,
+  .border-white\/15,
+  .border-white\/20,
+  .border-white\/25,
+  .border-white\/30
+) {
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+html:not(.dark) :is(
+  .bg-white\/\[0\.04\],
+  .bg-white\/\[0\.06\],
+  .bg-white\/\[0\.07\],
+  .bg-white\/\[0\.08\],
+  .bg-white\/5,
+  .bg-white\/10,
+  .bg-white\/15
+) {
+  background-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+html:not(.dark) .hover\:bg-white\/10:hover,
+html:not(.dark) .hover\:bg-white\/15:hover {
+  background-color: rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Form inputs & dropdowns in Light Mode */
+html:not(.dark) input:not([type="checkbox"]):not([type="radio"]),
+html:not(.dark) select,
+html:not(.dark) textarea {
+  color: #0f172a !important;
+  background-color: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(15, 23, 42, 0.20) !important;
+}
+
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder {
+  color: #64748b !important;
+}
+
+html:not(.dark) select option {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Light mode scrollbar */
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.22);
+}
+
+html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.38);
+}
+
+/* Smooth transitions */
+button, a, input, select, textarea {
+  transition: all 0.15s ease-in-out;
+}
+

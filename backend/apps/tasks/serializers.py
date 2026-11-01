@@ -65,7 +65,8 @@ class TaskSerializer(serializers.ModelSerializer):
         # Auto-clear inbox flag when a project is assigned
         if validated_data.get("project"):
             validated_data.setdefault("is_inbox", False)
-        task = Task.objects.create(user=self.context["request"].user, **validated_data)
+        user = validated_data.pop("user", None) or self.context["request"].user
+        task = Task.objects.create(user=user, **validated_data)
         if tags:
             task.tags.set(tags)
         return task
