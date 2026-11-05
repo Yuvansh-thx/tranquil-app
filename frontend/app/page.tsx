@@ -54,7 +54,9 @@ export default function DashboardPage() {
 
   // Collapsible sections state
   const [collapsed, setCollapsed] = useState<{ [key: string]: boolean }>({
-    todos: false,
+    unplanned: false,
+    withoutProject: false,
+    todos: true,
     scheduled: true,
     done: true,
   });
@@ -121,6 +123,7 @@ export default function DashboardPage() {
       // Auto expand the relevant group so user immediately sees the newly added item
       setCollapsed((prev) => ({
         ...prev,
+        unplanned: false,
         todos: false,
         scheduled: dueDate ? false : prev.scheduled,
       }));
@@ -467,7 +470,45 @@ export default function DashboardPage() {
 
           {/* Collapsible Sections Container */}
           <div className="space-y-4">
-            {/* 1. Todo's Group */}
+            {/* 1. Unplanned Group matching screenshot */}
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => toggleSection('unplanned')}
+                className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white transition px-1 cursor-pointer"
+              >
+                {collapsed.unplanned ? (
+                  <ChevronDown className="h-3.5 w-3.5" />
+                ) : (
+                  <ChevronUp className="h-3.5 w-3.5" />
+                )}
+                <span>Unplanned</span>
+                <span className="rounded-md bg-slate-200/80 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                  {unplannedTasks.length}
+                </span>
+              </button>
+
+              {!collapsed.unplanned && (
+                <div className="space-y-2 pl-1">
+                  {unplannedTasks.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-300/60 dark:border-slate-800 p-4 text-center text-xs text-slate-400 italic">
+                      No unplanned todos. Add one above!
+                    </div>
+                  ) : (
+                    unplannedTasks.map((task) => renderTaskRow(task))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 2. Without Project Group matching screenshot */}
+            <div className="space-y-2 pt-2">
+              <span className="block text-xs font-bold text-slate-500 dark:text-slate-400 px-1">
+                Without Project
+              </span>
+            </div>
+
+            {/* 3. Todo's Group matching screenshot */}
             <div className="space-y-2">
               <button
                 type="button"
